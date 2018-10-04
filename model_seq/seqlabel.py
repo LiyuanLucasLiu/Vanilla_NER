@@ -50,15 +50,36 @@ class Vanilla_SeqLabel(nn.Module):
         self.char_seq = nn.Linear(c_hidden * 2, w_dim)
 
         self.c_hidden = c_hidden
+        self.unit_type = unit
         self.char_fw = rnnunit_map[unit](c_dim, c_hidden, c_layer, dropout = droprate)
         self.char_bw = rnnunit_map[unit](c_dim, c_hidden, c_layer, dropout = droprate)
 
-        self.word_rnn = rnnunit_map[unit](w_dim + w_dim, w_hidden // 2, w_layer, dropout = droprate, bidirectional = True)
+        self.word_rnn = rnnunit_map[unit](w_dim * 2, w_hidden // 2, w_layer, dropout = droprate, bidirectional = True)
 
         self.y_num = y_num
         self.crf = CRF(w_hidden, y_num)
 
         self.drop = nn.Dropout(p = droprate)
+
+    def to_params(self):
+        """
+        To parameters.
+        """
+        return {
+            "model_type": "char-lstm-crf",
+            "word_embed_num": self.word_embed.num_embeddings,
+            "word_embed_dim": self.word_embed.embedding_dim,
+            "char_embed_num": self.char_embed.num_embeddings,
+            "char_embed_dim": self.char_embed.embedding_dim,
+            "char_hidden": self.c_hidden,
+            "char_layers": self.char_fw.num_layers,
+            "word_hidden": self.word_rnn.hidden_size,
+            "word_layers": self.word_rnn.num_layers,
+            "droprate": self.drop.p,
+            "y_num": self.y_num,
+            "label_schema": "iobes",
+            "unit_type": self.unit_type
+        }
 
     def set_batch_seq_size(self, sentence):
         """

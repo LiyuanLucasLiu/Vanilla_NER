@@ -109,35 +109,69 @@ if __name__ == "__main__":
     normalizer=0
     tot_loss = 0
 
-    for indexs in range(args.epoch):
+    try:
+        for indexs in range(args.epoch):
 
-        pw.info('############')
-        pw.info('Epoch: {}'.format(indexs))
-        pw.nvidia_memory_map()
+            pw.info('############')
+            pw.info('Epoch: {}'.format(indexs))
+            pw.nvidia_memory_map()
 
-        seq_model.train()
-        for f_c, f_p, b_c, b_p, f_w, f_y, f_y_m, _ in train_dataset.get_tqdm(device):
+            seq_model.train()
+            for f_c, f_p, b_c, b_p, f_w, f_y, f_y_m, _ in train_dataset.get_tqdm(device):
 
-            seq_model.zero_grad()
-            output = seq_model(f_c, f_p, b_c, b_p, f_w)
-            loss = crit(output, f_y, f_y_m)
+                seq_model.zero_grad()
+                output = seq_model(f_c, f_p, b_c, b_p, f_w)
+                loss = crit(output, f_y, f_y_m)
 
-            tot_loss += utils.to_scalar(loss)
-            normalizer += 1
+                tot_loss += utils.to_scalar(loss)
+                normalizer += 1
 
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(seq_model.parameters(), args.clip)
-            optimizer.step()
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(seq_model.parameters(), args.clip)
+                optimizer.step()
 
-            batch_index += 1
-            if 0 == batch_index % 100:
-                pw.add_loss_vs_batch({'training_loss': tot_loss / (normalizer + 1e-9)}, batch_index, use_logger = False)
-                tot_loss = 0
-                normalizer = 0
+                batch_index += 1
+                if 0 == batch_index % 100:
+                    pw.add_loss_vs_batch({'training_loss': tot_loss / (normalizer + 1e-9)}, batch_index, use_logger = False)
+                    tot_loss = 0
+                    normalizer = 0
 
-        if args.lr > 0:
-            current_lr = args.lr / (1 + (indexs + 1) * args.lr_decay)
-            utils.adjust_learning_rate(optimizer, current_lr)
+            if args.lr > 0:
+                current_lr = args.lr / (1 + (indexs + 1) * args.lr_decay)
+                utils.adjust_learning_rate(optimizer, current_lr)
+
+            dev_f1, dev_pre, dev_rec, dev_acc = evaluator.calc_score(seq_model, dev_dataset.get_tqdm(device))
+
+            pw.add_loss_vs_batch({'dev_f1': dev_f1}, indexs, use_logger = True)
+            pw.add_loss_vs_batch({'dev_pre': dev_pre, 'dev_rec': dev_rec}, indexs, use_logger = False)
+            
+            pw.info('Saving model...')
+            pw.save_checkpoint(model = seq_model, 
+                        is_best = (dev_f1 > best_f1), 
+                        s_dict = {'config': seq_config, 
+                                'gw_map': gw_map, 
+                                'c_map': c_map, 
+                                'y_map': y_map})
+
+            if dev_f1 > best_f1:
+                test_f1, test_pre, test_rec, test_acc = evaluator.calc_score(seq_model, test_dataset.get_tqdm(device))
+                best_f1, best_dev_pre, best_dev_rec, best_dev_acc = dev_f1, dev_pre, dev_rec, dev_acc
+                pw.add_loss_vs_batch({'test_f1': test_f1}, indexs, use_logger = True)
+                pw.add_loss_vs_batch({'test_pre': test_pre, 'test_rec': test_rec}, indexs, use_logger = False)
+                patience_count = 0
+            else:
+                patience_count += 1
+                if patience_count >= args.patience:
+                    break
+
+    except Exception as e_ins:
+
+        pw.info('Exiting from training early')
+        pw.save_checkpoint(model = lm_model, optimizer = optimizer, is_best = False)
+
+        print(type(e_ins))
+        print(e_ins.args)
+        print(e_ins)
 
         dev_f1, dev_pre, dev_rec, dev_acc = evaluator.calc_score(seq_model, dev_dataset.get_tqdm(device))
 
@@ -145,17 +179,16 @@ if __name__ == "__main__":
         pw.add_loss_vs_batch({'dev_pre': dev_pre, 'dev_rec': dev_rec}, indexs, use_logger = False)
         
         pw.info('Saving model...')
-        pw.save_checkpoint(model = seq_model, is_best = (dev_f1 > best_f1))
+        pw.save_checkpoint(model = seq_model, 
+                    is_best = (dev_f1 > best_f1), 
+                    s_dict = {'config': seq_config, 
+                            'gw_map': gw_map, 
+                            'c_map': c_map, 
+                            'y_map': y_map})
 
-        if dev_f1 > best_f1:
-            test_f1, test_pre, test_rec, test_acc = evaluator.calc_score(seq_model, test_dataset.get_tqdm(device))
-            best_f1, best_dev_pre, best_dev_rec, best_dev_acc = dev_f1, dev_pre, dev_rec, dev_acc
-            pw.add_loss_vs_batch({'test_f1': test_f1}, indexs, use_logger = True)
-            pw.add_loss_vs_batch({'test_pre': test_pre, 'test_rec': test_rec}, indexs, use_logger = False)
-            patience_count = 0
-        else:
-            patience_count += 1
-            if patience_count >= args.patience:
-                break
+        test_f1, test_pre, test_rec, test_acc = evaluator.calc_score(seq_model, test_dataset.get_tqdm(device))
+        best_f1, best_dev_pre, best_dev_rec, best_dev_acc = dev_f1, dev_pre, dev_rec, dev_acc
+        pw.add_loss_vs_batch({'test_f1': test_f1}, indexs, use_logger = True)
+        pw.add_loss_vs_batch({'test_pre': test_pre, 'test_rec': test_rec}, indexs, use_logger = False)
 
     pw.close()
