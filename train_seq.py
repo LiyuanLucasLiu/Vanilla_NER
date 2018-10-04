@@ -8,17 +8,10 @@ import codecs
 import pickle
 import math
 
-from model_word_ada.LM import LM
-from model_word_ada.basic import BasicRNN
-from model_word_ada.densenet import DenseRNN
-from model_word_ada.ldnet import LDRNN
-
 from model_seq.crf import CRFLoss, CRFDecode
 from model_seq.dataset import SeqDataset
 from model_seq.evaluator import eval_wc
-from model_seq.seqlabel import SeqLabel, Vanilla_SeqLabel
-from model_seq.seqlm import BasicSeqLM
-from model_seq.sparse_lm import SparseSeqLM
+from model_seq.seqlabel import Vanilla_SeqLabel
 import model_seq.utils as utils
 
 from torch_scope import wrapper
@@ -48,7 +41,7 @@ if __name__ == "__main__":
     parser.add_argument('--seq_w_hid', type=int, default=300)
     parser.add_argument('--seq_w_layer', type=int, default=1)
     parser.add_argument('--seq_droprate', type=float, default=0.5)
-    parser.add_argument('--seq_model', choices=['vanilla'], default='lm-vanilla')
+    parser.add_argument('--seq_model', choices=['vanilla'], default='vanilla')
     parser.add_argument('--seq_rnn_unit', choices=['gru', 'lstm', 'rnn'], default='lstm')
 
     parser.add_argument('--batch_size', type=int, default=10)
@@ -167,7 +160,6 @@ if __name__ == "__main__":
     except Exception as e_ins:
 
         pw.info('Exiting from training early')
-        pw.save_checkpoint(model = lm_model, optimizer = optimizer, is_best = False)
 
         print(type(e_ins))
         print(e_ins.args)

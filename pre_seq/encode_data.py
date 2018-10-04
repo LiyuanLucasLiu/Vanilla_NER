@@ -28,7 +28,7 @@ def encode_dataset(input_file, gw_map, c_map, y_map):
     with open(input_file, 'r') as fin:
         for line in fin:
             if line.isspace() or line.startswith('-DOCSTART-'):
-                if len(tmpw_flm) > 0:
+                if len(tmpw_gw) > 0:
                     dataset.append([tmpw_gw, tmpc, tmpy])
                 tmpw_gw, tmpc, tmpy = list(), list(), list()
             else:
@@ -37,19 +37,18 @@ def encode_dataset(input_file, gw_map, c_map, y_map):
                 tmpy.append(y_map[line[-1]])
                 tmpc.append([c_map.get(tup, c_unk) for tup in line[0]])
 
-    if len(tmpw_flm) > 0:
+    if len(tmpw_gw) > 0:
         dataset.append([tmpw_gw, tmpc, tmpy])
 
     return dataset
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_file', default="./data/ner/eng.train.iobes")
-    parser.add_argument('--test_file', default="./data/ner/eng.testb.iobes")
-    parser.add_argument('--dev_file', default="./data/ner/eng.testa.iobes")
+    parser.add_argument('--train_file', default="../DDCLM/data/ner/eng.train.iobes")
+    parser.add_argument('--test_file', default="../DDCLM/data/ner/eng.testb.iobes")
+    parser.add_argument('--dev_file', default="../DDCLM/data/ner/eng.testa.iobes")
     parser.add_argument('--input_map', default="./data/conll_map.pk")
     parser.add_argument('--output_file', default="./data/ner_dataset.pk")
-    parser.add_argument('--threshold', type=int, default=1)
     parser.add_argument('--unk', default='<unk>')
     args = parser.parse_args()
 
