@@ -11,6 +11,8 @@ import itertools
 import model_seq.utils as utils
 from torch.autograd import Variable
 
+from ipdb import set_trace
+
 class eval_batch:
     """
     Base class for evaluation, provide method to calculate f1 score and accuracy.

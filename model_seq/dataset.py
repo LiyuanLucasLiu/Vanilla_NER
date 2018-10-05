@@ -154,7 +154,7 @@ class SeqDataset(object):
             tmp_p = list(itertools.accumulate([1]+instance[3][::-1]))[::-1] + [1]*word_padded_len_ins
             tmp_batch[3].append([(x - 1) * cur_batch_size + instance_ind for x in tmp_p])
 
-            tmp_batch[4].append(instance[2] + [self.w_pad] + [self.w_pad] * word_padded_len_ins)
+            tmp_batch[4].append(instance[0] + [self.w_pad] + [self.w_pad] * word_padded_len_ins)
 
             tmp_batch[5].append([self.y_start * self.y_size + instance[2][0]] + [instance[2][ind] * self.y_size + instance[2][ind+1] for ind in range(len(instance[2]) - 1)] + [instance[2][-1] * self.y_size + self.y_pad] + [self.y_pad * self.y_size + self.y_pad] * word_padded_len_ins)
 

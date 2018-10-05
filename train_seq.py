@@ -53,6 +53,10 @@ if __name__ == "__main__":
     parser.add_argument('--update', choices=['Adam', 'Adagrad', 'Adadelta', 'SGD'], default='SGD')
     args = parser.parse_args()
 
+    # automatically sync to spreadsheet
+    # pw = wrapper(os.path.join(args.cp_root, args.checkpoint_name), args.checkpoint_name, enable_git_track=args.git_tracking, \
+    #                   sheet_track_name=args.spreadsheet_name, credential_path="/data/work/jingbo/ll2/Torch-Scope/torch-scope-8acf12bee10f.json")
+    
     pw = wrapper(os.path.join(args.cp_root, args.checkpoint_name), args.checkpoint_name, enable_git_track=args.git_tracking)
     pw.set_level('info')
 
@@ -74,6 +78,7 @@ if __name__ == "__main__":
     seq_model = SL_map[args.seq_model](len(c_map), args.seq_c_dim, args.seq_c_hid, args.seq_c_layer, len(gw_map), args.seq_w_dim, args.seq_w_hid, args.seq_w_layer, len(y_map), args.seq_droprate, unit=args.seq_rnn_unit)
     seq_model.rand_init()
     seq_model.load_pretrained_word_embedding(torch.FloatTensor(emb_array))
+    seq_config = seq_model.to_params()
     seq_model.to(device)
     crit = CRFLoss(y_map)
     decoder = CRFDecode(y_map)
