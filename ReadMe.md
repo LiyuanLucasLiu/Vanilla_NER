@@ -42,10 +42,11 @@ python train_seq.py -h
 ## Citation
 
 If you find the implementation useful, please cite the following paper: [Efficient Contextualized Representation: Language Model Pruning for Sequence Labeling](https://arxiv.org/abs/1804.07827)
-
+```
 @inproceedings{liu2018efficient,
   title = "{Efficient Contextualized Representation: Language Model Pruning for Sequence Labeling}", 
   author = {Liu, Liyuan and Ren, Xiang and Shang, Jingbo and Peng, Jian and Han, Jiawei}, 
   booktitle = {EMNLP}, 
   year = 2018, 
 }
+```
