@@ -39,6 +39,10 @@ Then train the model:
 python train_seq.py -h
 ```
 
+## Inference
+
+Models trained with this package can be used to inference with the [LightNER package](https://github.com/LiyuanLucasLiu/LightNER).
+
 ## Citation
 
 If you find the implementation useful, please cite the following paper: [Efficient Contextualized Representation: Language Model Pruning for Sequence Labeling](https://arxiv.org/abs/1804.07827)
