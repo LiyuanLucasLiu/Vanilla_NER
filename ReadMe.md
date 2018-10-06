@@ -3,7 +3,18 @@
 [![Documentation Status](https://readthedocs.org/projects/ld-net/badge/?version=latest)](http://ld-net.readthedocs.io/en/latest/?badge=latest) -->
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-This project is drivied from LD-Net, and provides a vanilla Char-LSTM-CRF model for Named Entity Recognition. 
+**Check Our New NER Toolkit🚀🚀🚀**
+- **Inference**:
+  - **[LightNER](https://github.com/LiyuanLucasLiu/LightNER)**: inference w. models pre-trained / trained w. *any* following tools, *efficiently*. 
+- **Training**:
+  - **[LD-Net](https://github.com/LiyuanLucasLiu/LD-Net)**: train NER models w. efficient contextualized representations.
+  - **[VanillaNER](https://github.com/LiyuanLucasLiu/Vanilla_NER)**: train vanilla NER models w. pre-trained embedding.
+- **Distant Training**:
+  - **[AutoNER](https://shangjingbo1226.github.io/AutoNER/)**: train NER models w.o. line-by-line annotations and get competitive performance.
+
+--------------------------------
+
+This project is drivied from LD-Net, and provides a vanilla Char-LSTM-CRF model for Named Entity Recognition (LD-Net w.o. contextualized representations). 
 
 We are in an early-release beta. Expect some adventures and rough edges. LD-Net is a more mature project, please refer to LD-Net for detailed documents and also demo scripts.
 
