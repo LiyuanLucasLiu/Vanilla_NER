@@ -44,6 +44,7 @@ if __name__ == "__main__":
     parser.add_argument('--seq_model', choices=['vanilla'], default='vanilla')
     parser.add_argument('--seq_rnn_unit', choices=['gru', 'lstm', 'rnn'], default='lstm')
 
+    parser.add_argument('--eval_type', choices=["f1", "acc"], default="f1")
     parser.add_argument('--batch_size', type=int, default=10)
     parser.add_argument('--patience', type=int, default=15)
     parser.add_argument('--epoch', type=int, default=200)
@@ -82,7 +83,7 @@ if __name__ == "__main__":
     seq_model.to(device)
     crit = CRFLoss(y_map)
     decoder = CRFDecode(y_map)
-    evaluator = eval_wc(decoder, 'f1')
+    evaluator = eval_wc(decoder, args.eval_type)
 
     pw.info('Constructing dataset')
 
