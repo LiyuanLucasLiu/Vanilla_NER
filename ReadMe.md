@@ -29,7 +29,7 @@ Our package is based on Python 3.6 and the following packages:
 ```
 numpy
 tqdm
-torch-scope
+torch-scope>=0.5.0
 torch==0.4.1
 ```
 
