@@ -44,9 +44,12 @@ class Vanilla_SeqLabel(nn.Module):
 
         rnnunit_map = {'rnn': nn.RNN, 'lstm': nn.LSTM, 'gru': nn.GRU}
 
+        self.layernorm_ce = LayerNorm(c_dim)
+
         self.char_embed = nn.Embedding(c_num, c_dim)
         self.word_embed = nn.Embedding(w_num, w_dim)
 
+        self.layernorm_cs = LayerNorm(c_hidden * 2)
         self.char_seq = nn.Linear(c_hidden * 2, w_dim)
 
         self.c_hidden = c_hidden
@@ -56,10 +59,12 @@ class Vanilla_SeqLabel(nn.Module):
         self.char_fw = rnnunit_map[unit](c_dim, c_hidden, c_layer, dropout = tmp_rnn_dropout)
         self.char_bw = rnnunit_map[unit](c_dim, c_hidden, c_layer, dropout = tmp_rnn_dropout)
 
+        self.layernorm_wi = LayerNorm(w_dim * 2)
         tmp_rnn_dropout = droprate if w_layer > 1 else 0
         self.word_rnn = rnnunit_map[unit](w_dim * 2, w_hidden // 2, w_layer, dropout = tmp_rnn_dropout, bidirectional = True)
 
         self.y_num = y_num
+        self.layernorm_crf = LayerNorm(w_hidden)
         self.crf = CRF(w_hidden, y_num)
 
         self.drop = nn.Dropout(p = droprate)
@@ -134,8 +139,8 @@ class Vanilla_SeqLabel(nn.Module):
         
         self.set_batch_seq_size(f_w)
 
-        f_c_e = self.drop(self.char_embed(f_c))
-        b_c_e = self.drop(self.char_embed(b_c))
+        f_c_e = self.layernorm_ce(self.drop(self.char_embed(f_c)))
+        b_c_e = self.layernorm_ce(self.drop(self.char_embed(b_c)))
 
         f_c_e, _ = self.char_fw(f_c_e)
         b_c_e, _ = self.char_bw(b_c_e)
@@ -144,15 +149,15 @@ class Vanilla_SeqLabel(nn.Module):
 
         b_c_e = b_c_e.view(-1, self.c_hidden).index_select(0, b_p).view(self.word_seq_length, self.batch_size, self.c_hidden)
 
-        c_o = self.drop(torch.cat([f_c_e, b_c_e], dim = 2))
+        c_o = self.layernorm_cs(self.drop(torch.cat([f_c_e, b_c_e], dim = 2)))
         c_o = self.char_seq(c_o)
 
         w_e = self.word_embed(f_w)
 
-        rnn_in = self.drop(torch.cat([c_o, w_e], dim = 2))
+        rnn_in = self.layernorm_wi(self.drop(torch.cat([c_o, w_e], dim = 2)))
 
         rnn_out, _ = self.word_rnn(rnn_in)
 
-        crf_out = self.crf(self.drop(rnn_out)).view(self.word_seq_length, self.batch_size, self.y_num, self.y_num)
+        crf_out = self.crf(self.layernorm_crf(self.drop(rnn_out))).view(self.word_seq_length, self.batch_size, self.y_num, self.y_num)
 
         return crf_out

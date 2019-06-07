@@ -14,6 +14,21 @@ import torch.nn.init
 
 from torch.autograd import Variable
 
+class LayerNorm(nn.Module):
+    def __init__(self, size, variance_epsilon=1e-7):
+        """Construct a layernorm module in the TF style (epsilon inside the square root).
+        """
+        super(LayerNorm, self).__init__()
+        self.weight = nn.Parameter(torch.ones(size))
+        self.bias = nn.Parameter(torch.zeros(size))
+        self.variance_epsilon = variance_epsilon
+
+    def forward(self, x):
+        u = x.mean(-1, keepdim=True)
+        s = (x - u).pow(2).mean(-1, keepdim=True)
+        x = (x - u) / torch.sqrt(s + self.variance_epsilon)
+        return self.weight * x + self.bias
+
 def log_sum_exp(vec):
     """
     log sum exp function.
