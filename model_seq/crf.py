@@ -162,7 +162,7 @@ class CRFDecode():
         seq_len = scores.size(0)
         bat_size = scores.size(1)
 
-        mask = 1 - mask.data
+        mask = ～mask.data
         decode_idx = torch.LongTensor(seq_len-1, bat_size)
 
         seq_iter = enumerate(scores)
