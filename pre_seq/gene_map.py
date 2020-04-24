@@ -31,6 +31,7 @@ if __name__ == "__main__":
         if line[0] == args.unk:
             gw_map['<unk>'] = len(gw_map)
         else:
+            assert line[0] == line[0].lower()
             gw_map[line[0]] = len(gw_map)
         embedding_array.append(vector)
 
