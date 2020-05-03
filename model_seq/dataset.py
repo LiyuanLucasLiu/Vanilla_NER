@@ -162,7 +162,7 @@ class SeqDataset(object):
 
             tmp_batch[7].append(instance[2])
 
-        tbt = [torch.LongTensor(v).transpose(0, 1).contiguous() for v in tmp_batch[0:6]] + [torch.tensor(tmp_batch[6], dtype=torch.bool).transpose(0, 1).contiguous()]
+        tbt = [torch.LongTensor(v).transpose(0, 1).contiguous() for v in tmp_batch[0:6]] + [torch.tensor(tmp_batch[6], dtype=torch.uint8).transpose(0, 1).contiguous()]
         tbt[1] = tbt[1].view(-1)
         tbt[3] = tbt[3].view(-1)
 
